@@ -16,12 +16,14 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`, `Jim`
 BlogPosts.create(`Third Post`, `Excepteur sint occaecat cupidatat non
 proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Ut enim ad minim veniam,
 quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat.`, `Sally`, `8 Jan 18`);[]
+consequat.`, `Sally`, `8 Jan 18`);
+
 
 router.get('/', (req, res) => {
 	console.log('success!------------------------------------------');
 	res.json(BlogPosts.get());
 });
+
 
 router.post('/', jsonParser, (req, res) => {
 	const requiredFields = ['title', 'content', 'author', 'publishDate'];
@@ -36,20 +38,23 @@ router.post('/', jsonParser, (req, res) => {
 	res.status(201).json(item);
 });
 
+
 router.delete('/:id', (req, res) => {
 	BlogPosts.delete(req.params.id);
-	console.log(`Deleted blog post ${req.params.ID}`);
+	console.log(`Deleted blog post ${req.params.id}`);
 	res.status(204).end();
 });
 
 
-
 router.put('/:id', jsonParser, (req, res) => {
-	const requiredField = 'id';
-	if (!requiredField in req.body) {
-		const message = `Missing id in request body`;
-		console.error(message);
-		return res.status(400).send(message);
+	const requiredFields = ['id', 'author', 'content', 'title', 'date'];
+	for (fieldNum in requiredFields) {
+		const field = requiredFields[fieldNum];
+		if (!(field in req.body)) {
+			const message = `Missing ${field} in request body`;
+			console.error(message);
+			return res.status(400).send(message);
+		}
 	}
 	if (req.prarams.id !== req.body.id) {
 		const message = (
@@ -61,7 +66,10 @@ router.put('/:id', jsonParser, (req, res) => {
 	console.log('Updating blog post ${req.params.id}');
 	const updatedPost = BlogPosts.update ({
 		id: req.params.id,
-
+		author: req.body.author,
+		title: req.body.title,
+		content: req.body.content,
+		date: date
 	})
 });
 
