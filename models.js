@@ -66,5 +66,4 @@ function createBlogPostsModel() {
   return storage;
 }
 
-
 module.exports = {BlogPosts: createBlogPostsModel()};
