@@ -20,7 +20,6 @@ consequat.`, `Sally`, `8 Jan 18`);
 
 
 router.get('/', (req, res) => {
-	console.log('success!------------------------------------------');
 	res.json(BlogPosts.get());
 });
 
@@ -57,7 +56,7 @@ router.put('/:id', jsonParser, (req, res) => {
 			return res.status(400).send(message);
 		}
 	}
-	if (req.prarams.id !== req.body.id) {
+	if (req.params.id !== req.body.id) {
 		const message = (
 			`Request path id (${req.params.id}) and request body id `
 			`(${req.body.id} must match`);
@@ -70,8 +69,9 @@ router.put('/:id', jsonParser, (req, res) => {
 		author: req.body.author,
 		title: req.body.title,
 		content: req.body.content,
-		date: date
-	})
+		publishDate: "1 Jan 2017"
+	});
+	res.status(204).end();
 });
 
 
