@@ -12,6 +12,9 @@ const { BlogPost } = require('./models');
 const app = express();
 app.use(bodyParser.json());
 
+
+
+
 // -------------------- GET ----------------------
 app.get('/posts', (req, res) => {
   console.log(`GET request received.`);
@@ -73,6 +76,37 @@ app.post('/posts', (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
     });
 });
+
+
+
+
+
+// -------------------- PUT ----------------------
+app.put('/posts/:id', (req, res) => {
+  console.log('PUT request received');
+  if(!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+    const message = (
+      `Request path id (${req.params.id}) and request body id
+      ${req.body.id} must match`);
+    console.error(message);
+    return re.status(400).json({ message: message });
+  }
+
+  const toUpdate = {};
+  const updateableFields = ['author', 'content', 'title'];
+
+  updateableFields.forEach(field => {
+    if (field in req.body) {
+      toUpdate[field] = req.body[field];
+    }
+  });
+
+  BlogPost
+    .findByIdAndUpdate(req.params.id, { $set: toUpdate }, { "new": true })
+    .then(blogPost => res.status(200).json(blogPost).serialize())
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
+});
+
 
 
 
