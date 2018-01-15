@@ -12,10 +12,7 @@ const { BlogPost } = require('./models');
 const app = express();
 app.use(bodyParser.json());
 
-
-
-
-// --------------------_GET ----------------------
+// -------------------- GET ----------------------
 app.get('/posts', (req, res) => {
   console.log(`GET request received.`);
   BlogPost
@@ -32,13 +29,24 @@ app.get('/posts', (req, res) => {
     });
 });
 
+app.get('/posts/:id', (req, res) => {
+  console.log(`GET request received.`);
+  BlogPost
+    .findById(req.params.id)
+    .then(blogPost => res.json(blogPost.serialize()))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: `Internal server error` })
+    });
+});
 
 
 
-// --------------------_POST ----------------------
+
+// -------------------- POST ----------------------
 app.post('/posts', (req, res) => {
 
-  const requiredFields = ['title', 'author', 'content', 'publishDate'];
+  const requiredFields = ['title', 'author', 'content'];
   for (let num in requiredFields) {
     const field = requiredFields[num];
     if (!(field in req.body)) {
@@ -47,22 +55,35 @@ app.post('/posts', (req, res) => {
       return res.status(400).send(message);
     }
   }
-
+  if ( !(req.body.author.firstName && req.body.author.lastName) ) {
+    const message = `Missing author first or last name in request body`;
+    console.error(message);
+    return res.status(400).send(message);
+  };
   BlogPost
     .create({
       author: req.body.author,
       title: req.body.title,
-      content: req.body.content,
-      publishDate: req.body.publishDate
+      content: req.body.content
     })
+    .then(console.log('Creating a new blog post...'))
     .then(blogPost => res.status(201).json(blogPost.serialize()))
     .catch(err => {
       console.error(err);
       res.status(500).json({ message: 'Internal server error' });
-    })
+    });
 });
 
 
+
+// -------------------- DELETE ----------------------
+app.delete('/posts/:id', (req, res) => {
+  BlogPost
+    .findByIdAndRemove(req.params.id)
+    .then(console.log(`Deleting a blog post...`))
+    .then(blogPost => res.status(204).end())
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
+});
 
 
 app.use('*', function (req, res) {

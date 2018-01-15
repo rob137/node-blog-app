@@ -5,10 +5,11 @@ const mongoose = require('mongoose');
 const blogPostSchema = mongoose.Schema({
   title: {type: String, required: true},
   author: { 
-    firstName: String,
-    lastName: String
+    firstName: {type: String, required: true},
+    lastName: {type: String, required: true}
   },
-  content: {type: String, required: true}
+  content: {type: String, required: true},
+  created: Date
 });
 
 // Virtual to render author name as human readable string
@@ -21,7 +22,8 @@ blogPostSchema.methods.serialize = function() {
     id: this._id,
     title: this.title,
     author: this.nameString,
-    content: this.content 
+    content: this.content,
+    created: Date.now()
   };
 };
 
