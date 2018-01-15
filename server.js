@@ -1,46 +1,102 @@
+'use strict';
+
+const bodyParser = require('body-parser');
 const express = require('express');
-const morgan = require('morgan');
+const mongoose = require('mongoose');
+
+mongoose.Promise = global.Promise;
+                                  
+const { PORT, DATABASE_URL } = require('./config');
+const { BlogPost } = require('./models');
 
 const app = express();
+app.use(bodyParser.json());
 
-const blogPostsRouter = require('./blogPostsRouter');
+app.get('/blog-posts', (req, res) => {
+  console.log(`GET request received.`);
+  BlogPost
+    .find()
+    .then(blogPosts => {
 
-app.use(morgan('common'));
-
-app.use(express.static('public'));
-
-// This appears to already be fulfilled by the above.
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/views/index.html');
+      res.json({
+        blogPosts: blogPosts.map(
+          (blogPost) => blogpost.serialize())
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      res/status(500).json({ message: 'Internal server error' });
+    });
 });
 
-app.use('/blog-posts', blogPostsRouter);
+app.use('*', function (req, res) {
+  res.status(404).json({ message: 'Not found'});
+});
 
 let server;
 
-function runServer() {
-  const port = process.env.PORT || 8080;
-  return new Promise((resolve, reject) =>{
-    server = app.listen(port, () => {
-      console.log(`Your app is listening on port ${port}`);
-      resolve(server);
-    }).on('error', err => {
-      reject(err)
+app.post('/blog-posts', (req, res) => {
+
+  const requiredFields = ['title', 'author', 'content', 'publishDate'];
+  for (num in requiredFields) {
+    const field = requiredFields[num];
+    if (!(field in req.body)) {
+      const message = `missing ${field} in request body`;
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+
+  BlogPost
+    .create({
+      author: req.body.author,
+      title: req.body.title,
+      content: req.body.content,
+      publishDate: req.body.publishDate
+    })
+    .then(blogPost => res.status(201).json(restaurant.serialize()))
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ message: 'Internal server error' });
+    })
+});
+
+
+function runServer(databaseUrl = DATABASE_URL, port = PORT) {
+  return new Promise((resolve,reject) => {
+    mongoose.connect(databaseUrl, {useMongoClient: true}, err => {
+      if(err) {
+        return reject(err);
+      }
+      server = app.listen(port, () => {
+        console.log(`Your app is listening on port ${port}`);
+        console.log(`databaseUrl = ${databaseUrl}`);
+        resolve();
+        let results = BlogPost();
+        console.log(results);
+      })
+        .on('error', err => {
+          mongoose.disconnect();
+          reject(err);
+        });
     });
   });
 }
 
+
+
 function closeServer() {
-  return new Promise((resolve, reject) => {
-    console.log(`Closing server`);
-    server.close(err => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
+  return mongoose.disconnect().then(() => {
+    return new Promise((resolve, reject) => {
+      console.log(`Closing server`);
+      server.close(err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
     });
-  });
+});
 }
 
 if (require.main === module) {
