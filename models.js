@@ -8,8 +8,7 @@ const blogPostSchema = mongoose.Schema({
     firstName: String,
     lastName: String
   },
-  content: {type: String, required: true},
-  publishDate: Date
+  content: {type: String, required: true}
 });
 
 // Virtual to render author name as human readable string
@@ -24,7 +23,7 @@ blogPostSchema.methods.serialize = function() {
     author: this.nameString,
     content: this.content 
   };
-}
+};
 
 const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 

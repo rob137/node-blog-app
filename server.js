@@ -12,33 +12,34 @@ const { BlogPost } = require('./models');
 const app = express();
 app.use(bodyParser.json());
 
-app.get('/blog-posts', (req, res) => {
+
+
+
+// --------------------_GET ----------------------
+app.get('/posts', (req, res) => {
   console.log(`GET request received.`);
   BlogPost
     .find()
     .then(blogPosts => {
-
       res.json({
         blogPosts: blogPosts.map(
-          (blogPost) => blogpost.serialize())
-      });
+          (blogPost) => blogPost.serialize())
+      })
     })
     .catch(err => {
       console.error(err);
-      res/status(500).json({ message: 'Internal server error' });
+      res.status(500).json({ message: 'Internal server error' });
     });
 });
 
-app.use('*', function (req, res) {
-  res.status(404).json({ message: 'Not found'});
-});
 
-let server;
 
-app.post('/blog-posts', (req, res) => {
+
+// --------------------_POST ----------------------
+app.post('/posts', (req, res) => {
 
   const requiredFields = ['title', 'author', 'content', 'publishDate'];
-  for (num in requiredFields) {
+  for (let num in requiredFields) {
     const field = requiredFields[num];
     if (!(field in req.body)) {
       const message = `missing ${field} in request body`;
@@ -54,13 +55,21 @@ app.post('/blog-posts', (req, res) => {
       content: req.body.content,
       publishDate: req.body.publishDate
     })
-    .then(blogPost => res.status(201).json(restaurant.serialize()))
+    .then(blogPost => res.status(201).json(blogPost.serialize()))
     .catch(err => {
       console.error(err);
       res.status(500).json({ message: 'Internal server error' });
     })
 });
 
+
+
+
+app.use('*', function (req, res) {
+  res.status(404).json({ message: 'Not found'});
+});
+
+let server;
 
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
   return new Promise((resolve,reject) => {
@@ -70,10 +79,7 @@ function runServer(databaseUrl = DATABASE_URL, port = PORT) {
       }
       server = app.listen(port, () => {
         console.log(`Your app is listening on port ${port}`);
-        console.log(`databaseUrl = ${databaseUrl}`);
         resolve();
-        let results = BlogPost();
-        console.log(results);
       })
         .on('error', err => {
           mongoose.disconnect();

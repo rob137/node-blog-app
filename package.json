@@ -1,9 +1,10 @@
 {
   "name": "4.1.4.7-blog-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Blog app to demo 'the modern classic' model",
   "main": "models.js",
   "scripts": {
+    "start": "node server.js",
     "test": "mocha --exit"
   },
   "author": "",
